@@ -1,0 +1,379 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Thời Tiết</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <script src="/js/moment.js"></script>
+    <link rel="stylesheet" href="/css/index.css" />
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="app-wrapper">
+      <!-- ── Top bar: search + user ── -->
+      <div class="search-section">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass search-icon"></i>
+          <input
+            type="text"
+            id="search-input"
+            placeholder="Tìm kiếm thành phố..."
+            autocomplete="off"
+          />
+          <span class="search-hint">nhấn Enter</span>
+        </div>
+        <button class="locate-btn" id="locate-btn" title="Dùng vị trí hiện tại">
+          <i class="fa-solid fa-location-crosshairs"></i>
+        </button>
+
+        <!-- User panel -->
+        <div
+          id="user-panel"
+          style="display: flex; align-items: center; gap: 8px; flex-shrink: 0"
+        >
+          <a
+            href="/profile.html"
+            id="user-greet"
+            style="
+              font-size: 13px;
+              color: var(--text-muted);
+              white-space: nowrap;
+              text-decoration: none;
+            "
+          ></a>
+          <a
+            href="/login.html"
+            id="login-link"
+            style="
+              display: flex;
+              align-items: center;
+              gap: 6px;
+              padding: 8px 16px;
+              background: var(--glass-bg);
+              border: 1px solid var(--glass-bdr);
+              border-radius: 50px;
+              font-size: 13px;
+              color: var(--accent);
+              text-decoration: none;
+              white-space: nowrap;
+              backdrop-filter: blur(16px);
+              transition: background var(--transition);
+            "
+          >
+            <i class="fa-solid fa-right-to-bracket"></i> Đăng nhập
+          </a>
+          <button
+            id="logout-btn"
+            style="
+              display: none;
+              align-items: center;
+              gap: 6px;
+              padding: 8px 16px;
+              background: rgba(239, 83, 80, 0.1);
+              border: 1px solid rgba(239, 83, 80, 0.25);
+              border-radius: 50px;
+              font-size: 13px;
+              color: #ef9a9a;
+              cursor: pointer;
+              font-family: &quot;DM Sans&quot;, sans-serif;
+              white-space: nowrap;
+            "
+          >
+            <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+          </button>
+        </div>
+      </div>
+
+      <!-- ── History chips (hiện khi đã login) ── -->
+      <div
+        id="history-section"
+        style="display: none; grid-area: search; margin-top: -6px"
+      >
+        <div
+          style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap"
+          id="history-list"
+        ></div>
+      </div>
+
+      <!-- ── Main weather card ── -->
+      <div class="weather-card" id="weather-card">
+        <div class="card-header">
+          <div class="location-block">
+            <i class="fa-solid fa-location-dot location-icon"></i>
+            <span class="city-name" id="city-name">--</span>
+          </div>
+          <div class="date-label" id="date-label"></div>
+        </div>
+
+        <div class="card-body">
+          <div class="icon-wrap">
+            <img
+              src="https://openweathermap.org/img/wn/01d@2x.png"
+              alt="weather icon"
+              class="weather-icon"
+              id="weather-icon"
+            />
+            <div class="icon-glow"></div>
+          </div>
+          <div class="temp-block">
+            <span class="temperature" id="temperature">--</span>
+            <span class="temp-unit">°C</span>
+          </div>
+          <p class="weather-state" id="weather-state">Đang tải...</p>
+        </div>
+
+        <div class="divider"></div>
+        <div class="stats-grid">
+          <div class="stat-item">
+            <div class="stat-icon-wrap sunrise-col">
+              <i class="fa-solid fa-sun"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Bình minh</span>
+              <span class="stat-value" id="sunrise">--</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon-wrap sunset-col">
+              <i class="fa-solid fa-moon"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Hoàng hôn</span>
+              <span class="stat-value" id="sunset">--</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon-wrap humidity-col">
+              <i class="fa-solid fa-droplet"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Độ ẩm</span>
+              <span class="stat-value"><span id="humidity">--</span>%</span>
+            </div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon-wrap wind-col">
+              <i class="fa-solid fa-wind"></i>
+            </div>
+            <div class="stat-info">
+              <span class="stat-label">Gió</span>
+              <span class="stat-value"
+                ><span id="wind-speed">--</span> km/h</span
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="divider"></div>
+        <div class="tips-section">
+          <div class="tips-header">
+            <i class="fa-solid fa-lightbulb tips-bulb"></i>
+            <span>Gợi ý hôm nay</span>
+          </div>
+          <div class="tips-list" id="tips-list">
+            <div class="tip-chip normal">
+              <span class="tip-emoji">🌤️</span>
+              <span>Đang lấy dữ liệu thời tiết...</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Telegram alert panel (chỉ hiện khi đăng nhập — điều khiển qua JS) -->
+        <div class="divider" id="alert-divider" style="display: none"></div>
+        <div
+          id="alert-panel"
+          style="display: none; flex-direction: column; gap: 12px"
+        >
+          <div class="tips-header">
+            <i class="fa-brands fa-telegram" style="color: #29b6f6"></i>
+            <span>Cảnh báo Telegram</span>
+          </div>
+          <p style="font-size: 12px; color: var(--text-muted); margin: 0 0 4px">
+            Trước tiên hãy nhắn <b>/start</b> cho
+            <b>@WeatherAlert2026Bot</b> trên Telegram, sau đó lấy Chat ID từ
+            <b>@userinfobot</b>.
+          </p>
+          <form id="telegram-form" style="display: flex; gap: 8px">
+            <div
+              class="search-box"
+              style="flex: 1; border-radius: 12px; padding: 9px 14px"
+            >
+              <i
+                class="fa-solid fa-hashtag"
+                style="color: var(--text-muted); font-size: 13px"
+              ></i>
+              <input
+                type="text"
+                id="tg-chat-id"
+                placeholder="Telegram Chat ID"
+                style="
+                  flex: 1;
+                  background: transparent;
+                  border: none;
+                  outline: none;
+                  color: var(--text-main);
+                  font-family: &quot;DM Sans&quot;, sans-serif;
+                  font-size: 14px;
+                "
+              />
+            </div>
+            <button
+              type="submit"
+              style="
+                padding: 9px 16px;
+                background: rgba(41, 182, 246, 0.15);
+                border: 1px solid rgba(41, 182, 246, 0.3);
+                border-radius: 12px;
+                color: #29b6f6;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              Lưu
+            </button>
+          </form>
+
+          <form id="email-form" style="display: flex; gap: 8px">
+            <div
+              class="search-box"
+              style="flex: 1; border-radius: 12px; padding: 9px 14px"
+            >
+              <i
+                class="fa-solid fa-envelope"
+                style="color: var(--text-muted); font-size: 13px"
+              ></i>
+              <input
+                type="email"
+                id="alert-email"
+                placeholder="Email nhận cảnh báo"
+                style="
+                  flex: 1;
+                  background: transparent;
+                  border: none;
+                  outline: none;
+                  color: var(--text-main);
+                  font-family: &quot;DM Sans&quot;, sans-serif;
+                  font-size: 14px;
+                "
+              />
+            </div>
+            <button
+              type="submit"
+              style="
+                padding: 9px 16px;
+                background: rgba(41, 182, 246, 0.15);
+                border: 1px solid rgba(41, 182, 246, 0.3);
+                border-radius: 12px;
+                color: #29b6f6;
+                cursor: pointer;
+                font-size: 13px;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              Lưu
+            </button>
+          </form>
+
+          <div style="display: flex; gap: 8px">
+            <button
+              id="alert-toggle"
+              style="
+                flex: 1;
+                padding: 9px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--glass-bdr);
+                border-radius: 12px;
+                color: var(--text-main);
+                cursor: pointer;
+                font-size: 13px;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              🔕 Bật cảnh báo
+            </button>
+            <button
+              id="test-alert-btn"
+              style="
+                flex: 1;
+                padding: 9px;
+                background: rgba(255, 255, 255, 0.05);
+                border: 1px solid var(--glass-bdr);
+                border-radius: 12px;
+                color: var(--text-main);
+                cursor: pointer;
+                font-size: 13px;
+                font-family: &quot;DM Sans&quot;, sans-serif;
+              "
+            >
+              📨 Gửi thử
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── Forecast card ── -->
+      <div class="forecast-card" id="forecast-card">
+        <div class="forecast-header">
+          <i class="fa-solid fa-calendar-days"></i>
+          <span>Dự báo 7 ngày tới</span>
+        </div>
+        <div class="forecast-list" id="forecast-list"></div>
+      </div>
+
+      <!-- Error toast -->
+      <div class="error-toast" id="error-toast">
+        <i class="fa-solid fa-triangle-exclamation"></i>
+        <span id="error-msg">Không tìm thấy thành phố này.</span>
+      </div>
+
+      <!-- Loading overlay -->
+      <div class="loading-overlay" id="loading-overlay">
+        <div class="spinner"></div>
+      </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/validators.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/ui.js"></script>
+    <script src="/js/app.js"></script>
+    <script>
+      // Hiện alert panel nếu đã đăng nhập
+      if (storage.isLoggedIn()) {
+        document.getElementById("alert-panel").style.display = "flex";
+        document.getElementById("alert-divider").style.display = "block";
+        // Load alert status
+        api
+          .alertStatus()
+          .then((res) => {
+            const btn = document.getElementById("alert-toggle");
+            if (btn)
+              btn.textContent = res.data.alertEnabled
+                ? "🔔 Tắt cảnh báo"
+                : "🔕 Bật cảnh báo";
+          })
+          .catch(() => {});
+      }
+      // history-section cần nằm sau search-section trong DOM flow
+      const hs = document.getElementById("history-section");
+      if (hs) hs.style.gridArea = "unset";
+    </script>
+  </body>
+</html>

@@ -1,0 +1,451 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Đăng nhập — Thời Tiết</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/index.css" />
+    <style>
+      .auth-wrapper {
+        position: relative;
+        z-index: 1;
+        width: 100%;
+        max-width: 420px;
+        margin: 60px auto;
+        padding: 0 16px;
+      }
+      .auth-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-bdr);
+        border-radius: var(--radius);
+        backdrop-filter: blur(24px);
+        padding: 36px 32px;
+        animation: slideUp 0.45s cubic-bezier(0.4, 0, 0.2, 1) both;
+      }
+      .auth-title {
+        font-family: "DM Serif Display", serif;
+        font-size: 28px;
+        margin-bottom: 6px;
+        text-align: center;
+      }
+      .auth-subtitle {
+        font-size: 13px;
+        color: var(--text-muted);
+        text-align: center;
+        margin-bottom: 28px;
+      }
+      .auth-tabs {
+        display: flex;
+        border-radius: 12px;
+        overflow: hidden;
+        background: rgba(255, 255, 255, 0.04);
+        border: 1px solid var(--glass-bdr);
+        margin-bottom: 24px;
+      }
+      .auth-tab {
+        flex: 1;
+        padding: 10px;
+        text-align: center;
+        cursor: pointer;
+        font-size: 14px;
+        font-weight: 500;
+        color: var(--text-muted);
+        transition: all var(--transition);
+        border: none;
+        background: transparent;
+        color: var(--text-muted);
+      }
+      .auth-tab.active {
+        background: var(--accent);
+        color: #0a1628;
+        font-weight: 600;
+      }
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .field label {
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.6px;
+        color: var(--text-muted);
+      }
+      .field-input {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-bdr);
+        border-radius: 12px;
+        padding: 11px 16px;
+        transition:
+          border-color var(--transition),
+          box-shadow var(--transition);
+      }
+      .field-input:focus-within {
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(79, 195, 247, 0.12);
+      }
+      .field-input i {
+        color: var(--text-muted);
+        font-size: 13px;
+        width: 16px;
+      }
+      .field-input input {
+        flex: 1;
+        background: transparent;
+        border: none;
+        outline: none;
+        color: var(--text-main);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+      }
+      .field-input input::placeholder {
+        color: var(--text-muted);
+      }
+      .field-error {
+        font-size: 12px;
+        color: #ef9a9a;
+        display: none;
+      }
+      .field-error.show {
+        display: block;
+      }
+      .submit-btn {
+        width: 100%;
+        padding: 13px;
+        background: var(--accent);
+        color: #0a1628;
+        border: none;
+        border-radius: 12px;
+        font-size: 15px;
+        font-weight: 600;
+        font-family: "DM Sans", sans-serif;
+        cursor: pointer;
+        margin-top: 8px;
+        transition:
+          opacity 0.2s,
+          transform 0.2s;
+      }
+      .submit-btn:hover {
+        opacity: 0.88;
+        transform: translateY(-1px);
+      }
+      .submit-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .back-link {
+        display: block;
+        text-align: center;
+        margin-top: 20px;
+        font-size: 13px;
+        color: var(--accent);
+        text-decoration: none;
+      }
+      .back-link:hover {
+        opacity: 0.8;
+      }
+      .form-panel {
+        display: none;
+      }
+      .form-panel.active {
+        display: block;
+      }
+      .global-error {
+        background: rgba(239, 83, 80, 0.12);
+        border: 1px solid rgba(239, 83, 80, 0.3);
+        border-radius: 10px;
+        padding: 10px 14px;
+        font-size: 13px;
+        color: #ef9a9a;
+        margin-bottom: 16px;
+        display: none;
+      }
+      .global-error.show {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="auth-wrapper">
+      <div class="auth-card">
+        <div class="auth-title">🌤️ Thời Tiết</div>
+        <div class="auth-subtitle">
+          Đăng nhập để lưu lịch sử & nhận cảnh báo
+        </div>
+
+        <div class="auth-tabs">
+          <button class="auth-tab active" data-tab="login">Đăng nhập</button>
+          <button class="auth-tab" data-tab="register">Đăng ký</button>
+        </div>
+
+        <div id="global-error" class="global-error"></div>
+
+        <!-- Login form -->
+        <div class="form-panel active" id="panel-login">
+          <div class="field">
+            <label>Tên đăng nhập</label>
+            <div class="field-input">
+              <i class="fa-solid fa-user"></i>
+              <input
+                type="text"
+                id="login-username"
+                placeholder="username"
+                autocomplete="username"
+              />
+            </div>
+            <span class="field-error" id="err-login-username"></span>
+          </div>
+          <div class="field">
+            <label>Mật khẩu</label>
+            <div class="field-input">
+              <i class="fa-solid fa-lock"></i>
+              <input
+                type="password"
+                id="login-password"
+                placeholder="••••••"
+                autocomplete="current-password"
+              />
+            </div>
+            <span class="field-error" id="err-login-password"></span>
+          </div>
+          <button class="submit-btn" id="login-btn">Đăng nhập</button>
+        </div>
+
+        <!-- Register form -->
+        <div class="form-panel" id="panel-register">
+          <div class="field">
+            <label>Họ tên (tùy chọn)</label>
+            <div class="field-input">
+              <i class="fa-solid fa-id-card"></i>
+              <input type="text" id="reg-fullname" placeholder="Nguyễn Văn A" />
+            </div>
+          </div>
+          <div class="field">
+            <label>Tên đăng nhập</label>
+            <div class="field-input">
+              <i class="fa-solid fa-user"></i>
+              <input
+                type="text"
+                id="reg-username"
+                placeholder="username"
+                autocomplete="username"
+              />
+            </div>
+            <span class="field-error" id="err-reg-username"></span>
+          </div>
+          <div class="field">
+            <label>Mật khẩu</label>
+            <div class="field-input">
+              <i class="fa-solid fa-lock"></i>
+              <input
+                type="password"
+                id="reg-password"
+                placeholder="••••••"
+                autocomplete="new-password"
+              />
+            </div>
+            <span class="field-error" id="err-reg-password"></span>
+          </div>
+          <div class="field">
+            <label>Xác nhận mật khẩu</label>
+            <div class="field-input">
+              <i class="fa-solid fa-lock"></i>
+              <input
+                type="password"
+                id="reg-confirm"
+                placeholder="••••••"
+                autocomplete="new-password"
+              />
+            </div>
+            <span class="field-error" id="err-reg-confirm"></span>
+          </div>
+          <button class="submit-btn" id="register-btn">Tạo tài khoản</button>
+        </div>
+
+        <a href="/" class="back-link">← Quay về trang thời tiết</a>
+      </div>
+    </div>
+
+    <script src="/js/config.js"></script>
+    <script>
+      // Minimal storage inline (không cần moment.js ở trang login)
+      const _storage = {
+        set(k, v) {
+          try {
+            localStorage.setItem(k, JSON.stringify(v));
+          } catch {}
+        },
+        get(k) {
+          try {
+            return JSON.parse(localStorage.getItem(k));
+          } catch {
+            return null;
+          }
+        },
+      };
+
+      // Redirect nếu đã đăng nhập
+      if (_storage.get(CONFIG.TOKEN_KEY)) location.href = "/";
+
+      // ── Tabs ──────────────────────────────────
+      document.querySelectorAll(".auth-tab").forEach((tab) => {
+        tab.addEventListener("click", () => {
+          document
+            .querySelectorAll(".auth-tab")
+            .forEach((t) => t.classList.remove("active"));
+          document
+            .querySelectorAll(".form-panel")
+            .forEach((p) => p.classList.remove("active"));
+          tab.classList.add("active");
+          document
+            .getElementById("panel-" + tab.dataset.tab)
+            .classList.add("active");
+          document.getElementById("global-error").classList.remove("show");
+        });
+      });
+
+      // ── Helpers ───────────────────────────────
+      function showFieldErr(id, msg) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.textContent = msg || "";
+        el.classList.toggle("show", !!msg);
+      }
+      function showGlobalErr(msg) {
+        const el = document.getElementById("global-error");
+        el.textContent = msg;
+        el.classList.toggle("show", !!msg);
+      }
+      function clearErrors() {
+        document
+          .querySelectorAll(".field-error")
+          .forEach((e) => e.classList.remove("show"));
+        showGlobalErr("");
+      }
+
+      async function apiPost(path, body) {
+        const res = await fetch(CONFIG.API_BASE + path, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(body),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message || "Có lỗi xảy ra.");
+        return data;
+      }
+
+      // Simple validators (không load validators.js để tránh dependency)
+      function validateLogin(u, p) {
+        const errors = {};
+        if (!u || u.length < 3)
+          errors.username = "Tên đăng nhập phải có ít nhất 3 ký tự.";
+        if (!p || p.length < 6)
+          errors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
+        return errors;
+      }
+      function validateRegister(u, p, cp) {
+        const errors = validateLogin(u, p);
+        if (!cp) errors.confirmPassword = "Vui lòng xác nhận mật khẩu.";
+        else if (p !== cp)
+          errors.confirmPassword = "Mật khẩu xác nhận không khớp.";
+        return errors;
+      }
+
+      // ── Login ─────────────────────────────────
+      document
+        .getElementById("login-btn")
+        .addEventListener("click", async () => {
+          clearErrors();
+          const u = document.getElementById("login-username").value.trim();
+          const p = document.getElementById("login-password").value;
+          const errs = validateLogin(u, p);
+          if (errs.username) showFieldErr("err-login-username", errs.username);
+          if (errs.password) showFieldErr("err-login-password", errs.password);
+          if (Object.keys(errs).length) return;
+
+          const btn = document.getElementById("login-btn");
+          btn.disabled = true;
+          btn.textContent = "Đang đăng nhập...";
+          try {
+            const data = await apiPost("/auth/login", {
+              username: u,
+              password: p,
+            });
+            _storage.set(CONFIG.TOKEN_KEY, data.data.token);
+            _storage.set(CONFIG.USER_KEY, data.data.user);
+            location.href = "/";
+          } catch (err) {
+            showGlobalErr(err.message);
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Đăng nhập";
+          }
+        });
+
+      // ── Register ──────────────────────────────
+      document
+        .getElementById("register-btn")
+        .addEventListener("click", async () => {
+          clearErrors();
+          const fullName = document.getElementById("reg-fullname").value.trim();
+          const u = document.getElementById("reg-username").value.trim();
+          const p = document.getElementById("reg-password").value;
+          const cp = document.getElementById("reg-confirm").value;
+          const errs = validateRegister(u, p, cp);
+          if (errs.username) showFieldErr("err-reg-username", errs.username);
+          if (errs.password) showFieldErr("err-reg-password", errs.password);
+          if (errs.confirmPassword)
+            showFieldErr("err-reg-confirm", errs.confirmPassword);
+          if (Object.keys(errs).length) return;
+
+          const btn = document.getElementById("register-btn");
+          btn.disabled = true;
+          btn.textContent = "Đang tạo tài khoản...";
+          try {
+            const data = await apiPost("/auth/register", {
+              username: u,
+              password: p,
+              fullName,
+            });
+            _storage.set(CONFIG.TOKEN_KEY, data.data.token);
+            _storage.set(CONFIG.USER_KEY, data.data.user);
+            location.href = "/";
+          } catch (err) {
+            showGlobalErr(err.message);
+          } finally {
+            btn.disabled = false;
+            btn.textContent = "Tạo tài khoản";
+          }
+        });
+
+      // Enter key submit
+      document.addEventListener("keydown", (e) => {
+        if (e.key !== "Enter") return;
+        const activePanel = document.querySelector(".form-panel.active");
+        activePanel?.querySelector("button.submit-btn")?.click();
+      });
+    </script>
+  </body>
+</html>

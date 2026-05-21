@@ -1,0 +1,238 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hồ Sơ Cá Nhân</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Serif+Display:ital@0;1&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="/css/index.css" />
+    <style>
+      .profile-wrapper {
+        max-width: 1000px;
+        margin: 40px auto;
+        padding: 0 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .profile-card {
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-bdr);
+        border-radius: 20px;
+        padding: 24px;
+        backdrop-filter: blur(16px);
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+      .profile-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: var(--text-main);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      .profile-field {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+      }
+      .profile-label {
+        font-size: 12px;
+        color: var(--text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .profile-input {
+        background: rgba(255, 255, 255, 0.05);
+        border: 1px solid var(--glass-bdr);
+        border-radius: 12px;
+        padding: 10px 14px;
+        color: var(--text-main);
+        font-family: "DM Sans", sans-serif;
+        font-size: 14px;
+        outline: none;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      .profile-input:focus {
+        border-color: var(--accent);
+      }
+      .profile-btn {
+        padding: 10px 20px;
+        border-radius: 12px;
+        font-size: 13px;
+        font-family: "DM Sans", sans-serif;
+        cursor: pointer;
+        border: 1px solid var(--glass-bdr);
+        background: var(--glass-bg);
+        color: var(--text-main);
+        transition: background 0.2s;
+      }
+      .profile-btn.primary {
+        background: rgba(41, 182, 246, 0.15);
+        border-color: rgba(41, 182, 246, 0.3);
+        color: #29b6f6;
+      }
+      .profile-btn.danger {
+        background: rgba(239, 83, 80, 0.1);
+        border-color: rgba(239, 83, 80, 0.25);
+        color: #ef9a9a;
+      }
+      .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        font-size: 13px;
+        color: var(--text-muted);
+        text-decoration: none;
+        margin-bottom: 4px;
+      }
+      .toast {
+        position: fixed;
+        bottom: 24px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: var(--glass-bg);
+        border: 1px solid var(--glass-bdr);
+        backdrop-filter: blur(16px);
+        padding: 12px 24px;
+        border-radius: 50px;
+        font-size: 13px;
+        color: var(--text-main);
+        display: none;
+        z-index: 999;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bg-orbs">
+      <div class="orb orb-1"></div>
+      <div class="orb orb-2"></div>
+      <div class="orb orb-3"></div>
+    </div>
+
+    <div class="profile-wrapper">
+      <a href="/" class="back-link">
+        <i class="fa-solid fa-arrow-left"></i> Quay lại
+      </a>
+
+      <!-- Thông tin cá nhân -->
+      <div class="profile-card">
+        <div class="profile-title">
+          <i class="fa-solid fa-user" style="color: #29b6f6"></i>
+          Thông tin cá nhân
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Họ tên</span>
+          <input type="text" id="fullName" class="profile-input" readonly />
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Tên đăng nhập</span>
+          <input type="text" id="username" class="profile-input" readonly />
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Ngày tạo tài khoản</span>
+          <input type="text" id="createdAt" class="profile-input" readonly />
+        </div>
+      </div>
+
+      <!-- Đổi mật khẩu -->
+      <div class="profile-card">
+        <div class="profile-title">
+          <i class="fa-solid fa-lock" style="color: #ffd54f"></i>
+          Đổi mật khẩu
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Mật khẩu hiện tại</span>
+          <input
+            type="password"
+            id="currentPassword"
+            class="profile-input"
+            placeholder="Nhập mật khẩu hiện tại"
+          />
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Mật khẩu mới</span>
+          <input
+            type="password"
+            id="newPassword"
+            class="profile-input"
+            placeholder="Nhập mật khẩu mới"
+          />
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Xác nhận mật khẩu mới</span>
+          <input
+            type="password"
+            id="confirmPassword"
+            class="profile-input"
+            placeholder="Nhập lại mật khẩu mới"
+          />
+        </div>
+        <button class="profile-btn primary" id="change-password-btn">
+          <i class="fa-solid fa-key"></i> Đổi mật khẩu
+        </button>
+      </div>
+
+      <!-- Cảnh báo -->
+      <div class="profile-card">
+        <div class="profile-title">
+          <i class="fa-brands fa-telegram" style="color: #29b6f6"></i>
+          Cài đặt cảnh báo
+        </div>
+        <div class="profile-field">
+          <span class="profile-label">Telegram Chat ID</span>
+          <input
+            type="text"
+            id="telegramChatId"
+            class="profile-input"
+            placeholder="Nhập Telegram Chat ID"
+          />
+        </div>
+        <button class="profile-btn primary" id="save-telegram-btn">
+          <i class="fa-solid fa-floppy-disk"></i> Lưu Telegram
+        </button>
+        <div class="profile-field">
+          <span class="profile-label">Email nhận cảnh báo</span>
+          <input
+            type="email"
+            id="alertEmail"
+            class="profile-input"
+            placeholder="Nhập email nhận cảnh báo"
+          />
+        </div>
+        <button class="profile-btn primary" id="save-email-btn">
+          <i class="fa-solid fa-floppy-disk"></i> Lưu Email
+        </button>
+        <button class="profile-btn" id="alert-toggle-btn">
+          🔕 Bật cảnh báo
+        </button>
+      </div>
+
+      <!-- Đăng xuất -->
+      <div class="profile-card">
+        <button class="profile-btn danger" id="logout-btn">
+          <i class="fa-solid fa-right-from-bracket"></i> Đăng xuất
+        </button>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="/js/config.js"></script>
+    <script src="/js/storage.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/profile.js"></script>
+  </body>
+</html>
