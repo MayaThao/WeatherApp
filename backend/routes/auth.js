@@ -11,6 +11,10 @@ const USERS_FILE = path.join(__dirname, "../data/users.json");
 
 function loadUsers() {
   try {
+    if (!fs.existsSync(USERS_FILE)) {
+      fs.mkdirSync(path.dirname(USERS_FILE), { recursive: true });
+      fs.writeFileSync(USERS_FILE, "[]");
+    }
     return JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
   } catch {
     return [];

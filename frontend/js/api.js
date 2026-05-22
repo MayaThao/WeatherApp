@@ -99,6 +99,7 @@ const api = (() => {
     getMe,
     updateTelegram,
     updateEmail,
+    changePassword,
     testAlert,
     testEmailAlert,
     toggleAlert,
