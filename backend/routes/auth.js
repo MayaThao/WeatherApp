@@ -1,29 +1,11 @@
 const express = require("express");
 const bcrypt = require("bcryptjs");
-const fs = require("fs");
-const path = require("path");
 const { signToken, requireAuth } = require("../middleware/auth");
 const { ok, fail, unauthorized } = require("../utils/response");
 const { rateLimiter } = require("../middleware/rateLimiter");
+const { User } = require("../services/dbService");
 
 const router = express.Router();
-const USERS_FILE = path.join(__dirname, "../data/users.json");
-
-function loadUsers() {
-  try {
-    if (!fs.existsSync(USERS_FILE)) {
-      fs.mkdirSync(path.dirname(USERS_FILE), { recursive: true });
-      fs.writeFileSync(USERS_FILE, "[]");
-    }
-    return JSON.parse(fs.readFileSync(USERS_FILE, "utf8"));
-  } catch {
-    return [];
-  }
-}
-
-function saveUsers(users) {
-  fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
-}
 
 // POST /api/auth/register
 router.post(
@@ -37,21 +19,20 @@ router.post(
       return fail(res, "Tên đăng nhập phải có ít nhất 3 ký tự.");
     if (password.length < 6)
       return fail(res, "Mật khẩu phải có ít nhất 6 ký tự.");
-    const users = loadUsers();
-    if (users.find((u) => u.username === username))
-      return fail(res, "Tên đăng nhập đã tồn tại.");
+
+    const existing = await User.findOne({ username });
+    if (existing) return fail(res, "Tên đăng nhập đã tồn tại.");
+
     const hash = await bcrypt.hash(password, 10);
-    const newUser = {
+    const newUser = await User.create({
       id: Date.now().toString(),
       username,
       password: hash,
       fullName: fullName || username,
       telegramChatId: null,
       alertEnabled: false,
-      createdAt: new Date().toISOString(),
-    };
-    users.push(newUser);
-    saveUsers(users);
+    });
+
     const token = signToken({ id: newUser.id, username: newUser.username });
     return ok(
       res,
@@ -70,10 +51,11 @@ router.post(
     const { username, password } = req.body;
     if (!username || !password)
       return fail(res, "Vui lòng nhập tên đăng nhập và mật khẩu.");
-    const users = loadUsers();
-    const user = users.find((u) => u.username === username);
+
+    const user = await User.findOne({ username });
     if (!user || !(await bcrypt.compare(password, user.password)))
       return unauthorized(res, "Tên đăng nhập hoặc mật khẩu không đúng.");
+
     const token = signToken({ id: user.id, username: user.username });
     return ok(
       res,
@@ -87,44 +69,44 @@ router.post(
 );
 
 // GET /api/auth/me
-router.get("/me", requireAuth, (req, res) => {
-  const users = loadUsers();
-  const user = users.find((u) => u.id === req.user.id);
+router.get("/me", requireAuth, async (req, res) => {
+  const user = await User.findOne({ id: req.user.id });
   if (!user) return fail(res, "Người dùng không tồn tại.", 404);
-  const { password, ...safe } = user;
+  const { password, ...safe } = user.toObject();
   return ok(res, safe);
 });
 
 // PATCH /api/auth/telegram
-router.patch("/telegram", requireAuth, (req, res) => {
+router.patch("/telegram", requireAuth, async (req, res) => {
   const { telegramChatId } = req.body;
   if (!telegramChatId) return fail(res, "Thiếu telegramChatId.");
-  const users = loadUsers();
-  const idx = users.findIndex((u) => u.id === req.user.id);
-  if (idx === -1) return fail(res, "Người dùng không tồn tại.", 404);
-  users[idx].telegramChatId = String(telegramChatId);
-  saveUsers(users);
+
+  const user = await User.findOneAndUpdate(
+    { id: req.user.id },
+    { telegramChatId: String(telegramChatId) },
+    { new: true },
+  );
+  if (!user) return fail(res, "Người dùng không tồn tại.", 404);
   return ok(
     res,
-    { telegramChatId: users[idx].telegramChatId },
+    { telegramChatId: user.telegramChatId },
     "Cập nhật Telegram thành công.",
   );
 });
 
 // PATCH /api/auth/email
-router.patch("/email", requireAuth, (req, res) => {
+router.patch("/email", requireAuth, async (req, res) => {
   const { email } = req.body;
   if (!email) return fail(res, "Thiếu email.");
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
     return fail(res, "Email không hợp lệ.");
 
-  const users = loadUsers();
-  const idx = users.findIndex((u) => u.id === req.user.id);
-  if (idx === -1) return fail(res, "Người dùng không tồn tại.", 404);
-
-  users[idx].email = email;
-  saveUsers(users);
-
+  const user = await User.findOneAndUpdate(
+    { id: req.user.id },
+    { email },
+    { new: true },
+  );
+  if (!user) return fail(res, "Người dùng không tồn tại.", 404);
   return ok(res, { email }, "Cập nhật email thành công.");
 });
 
@@ -136,15 +118,14 @@ router.patch("/change-password", requireAuth, async (req, res) => {
   if (newPassword.length < 6)
     return fail(res, "Mật khẩu mới phải có ít nhất 6 ký tự.");
 
-  const users = loadUsers();
-  const idx = users.findIndex((u) => u.id === req.user.id);
-  if (idx === -1) return fail(res, "Người dùng không tồn tại.", 404);
+  const user = await User.findOne({ id: req.user.id });
+  if (!user) return fail(res, "Người dùng không tồn tại.", 404);
 
-  const match = await bcrypt.compare(currentPassword, users[idx].password);
+  const match = await bcrypt.compare(currentPassword, user.password);
   if (!match) return fail(res, "Mật khẩu hiện tại không đúng.");
 
-  users[idx].password = await bcrypt.hash(newPassword, 10);
-  saveUsers(users);
+  user.password = await bcrypt.hash(newPassword, 10);
+  await user.save();
   return ok(res, {}, "Đổi mật khẩu thành công.");
 });
 
