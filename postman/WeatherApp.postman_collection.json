@@ -1,0 +1,78 @@
+{
+  "info": {
+    "_postman_id": "0c99862b-2599-402e-b421-ae413be7d5b7",
+    "name": "WeatherApp API Tests",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "54291283",
+    "_collection_link": "https://go.postman.co/collection/54291283-0c99862b-2599-402e-b421-ae413be7d5b7?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test(\"Đăng ký thành công\", function () {\r",
+              "    pm.response.to.have.status(201);\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Trả về token\", function () {\r",
+              "    var json = pm.response.json();\r",
+              "    pm.expect(json.data.token).to.be.a(\"string\");\r",
+              "});\r",
+              "\r",
+              "pm.test(\"Trả về thông tin user\", function () {\r",
+              "    var json = pm.response.json();\r",
+              "    pm.expect(json.data.user.username).to.be.a(\"string\");\r",
+              "});"
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        },
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              ""
+            ],
+            "type": "text/javascript",
+            "packages": {},
+            "requests": {}
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n  \"username\": \"testuser_{{$timestamp}}\",\r\n  \"password\": \"thaomy2801\",\r\n  \"fullName\": \"Ngô Thảo My\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://weatherappbackend-hg7s.onrender.com/api/auth/register",
+          "protocol": "https",
+          "host": [
+            "weatherappbackend-hg7s",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "auth",
+            "register"
+          ]
+        }
+      },
+      "response": []
+    }
+  ]
+}

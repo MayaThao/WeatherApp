@@ -1,0 +1,63 @@
+name: CI - Test & Auto Create Jira Task
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install
+
+      - name: Install Newman
+        run: npm install -g newman
+
+      - name: Run Postman tests
+        id: newman
+        run: |
+          newman run postman/WeatherApp.postman_collection.json \
+            --env-var "BASE_URL=https://weatherappbackend-hg7s.onrender.com" \
+            --reporters cli,json \
+            --reporter-json-export newman-results.json
+        continue-on-error: true
+
+      - name: Create Jira task if tests fail
+        if: steps.newman.outcome == 'failure'
+        run: |
+          curl -X POST \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Basic $(echo -n '${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}' | base64)" \
+            -d '{
+              "fields": {
+                "project": { "key": "KAN" },
+                "summary": "❌ Postman test thất bại - '${{ github.sha }}'",
+                "description": {
+                  "type": "doc",
+                  "version": 1,
+                  "content": [{
+                    "type": "paragraph",
+                    "content": [{
+                      "type": "text",
+                      "text": "Postman test tự động thất bại sau commit '${{ github.sha }}'. Vui lòng kiểm tra lại."
+                    }]
+                  }]
+                },
+                "issuetype": { "name": "Bug" }
+              }
+            }' \
+            "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue"
