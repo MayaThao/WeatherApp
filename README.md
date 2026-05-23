@@ -5,6 +5,7 @@
 
 ---
 
+```
 ## 📁 Cấu trúc thư mục
 
 project/
@@ -40,6 +41,8 @@ project/
 ├── index.html
 ├── login.html
 └── profile.html
+
+```
 
 ---
 
