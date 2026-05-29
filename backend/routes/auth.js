@@ -13,22 +13,33 @@ router.post(
   rateLimiter({ max: 5, windowMs: 60_000 }),
   async (req, res) => {
     const { username, password, fullName } = req.body;
+
+    // 1. Kiểm tra xem dữ liệu có tồn tại không
     if (!username || !password)
       return fail(res, "Vui lòng nhập đầy đủ tên đăng nhập và mật khẩu.");
-    if (username.length < 3)
-      return fail(res, "Tên đăng nhập phải có ít nhất 3 ký tự.");
+
+    // 2. Tiến hành loại bỏ toàn bộ khoảng trắng ở đầu và cuối của username
+    const trimmedUsername = username.trim();
+
+    // 3. Kiểm tra lại độ dài sau khi đã xóa khoảng trắng
+    if (trimmedUsername.length < 3)
+      return fail(
+        res,
+        "Tên đăng nhập phải có ít nhất 3 ký tự (không tính khoảng trắng).",
+      );
     if (password.length < 6)
       return fail(res, "Mật khẩu phải có ít nhất 6 ký tự.");
 
-    const existing = await User.findOne({ username });
+    // 4. Khi tìm kiếm hoặc tạo mới, hãy dùng chuỗi đã được loại bỏ khoảng trắng (trimmedUsername)
+    const existing = await User.findOne({ username: trimmedUsername });
     if (existing) return fail(res, "Tên đăng nhập đã tồn tại.");
 
     const hash = await bcrypt.hash(password, 10);
     const newUser = await User.create({
       id: Date.now().toString(),
-      username,
+      username: trimmedUsername, // Lưu username sạch vào database
       password: hash,
-      fullName: fullName || username,
+      fullName: fullName || trimmedUsername,
       telegramChatId: null,
       alertEnabled: false,
     });
@@ -36,7 +47,14 @@ router.post(
     const token = signToken({ id: newUser.id, username: newUser.username });
     return ok(
       res,
-      { token, user: { id: newUser.id, username, fullName: newUser.fullName } },
+      {
+        token,
+        user: {
+          id: newUser.id,
+          username: trimmedUsername,
+          fullName: newUser.fullName,
+        },
+      },
       "Đăng ký thành công!",
       201,
     );
