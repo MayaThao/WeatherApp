@@ -2,7 +2,7 @@ name: CI - Test & Auto Create Jira Task
 
 on:
   push:
-    branches: [main]
+    branches: [main , Quocdat]
   pull_request:
     branches: [main]
 

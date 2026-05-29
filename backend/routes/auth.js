@@ -27,8 +27,22 @@ router.post(
         res,
         "Tên đăng nhập phải có ít nhất 3 ký tự (không tính khoảng trắng).",
       );
-    if (password.length < 6)
-      return fail(res, "Mật khẩu phải có ít nhất 6 ký tự.");
+    // code cũ
+    // if (password.length < 6)
+    //   return fail(res, "Mật khẩu phải có ít nhất 6 ký tự.");
+
+    // code mới
+    // KIỂM TRA BẢO MẬT MẬT KHẨU 
+    // ==========================================
+    // Chuỗi Regex yêu cầu: Ít nhất 1 chữ hoa, 1 chữ thường, 1 số, 1 ký tự đặc biệt, dài từ 6 ký tự trở lên và CẤM khoảng trắng bừa bãi.
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/;
+
+    if (!passwordRegex.test(password)) {
+      return fail(
+        res,
+        "Mật khẩu phải có ít nhất 6 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường, 1 chữ số và 1 ký tự đặc biệt (không chứa khoảng trắng).",
+      );
+    }
 
     // 4. Khi tìm kiếm hoặc tạo mới, hãy dùng chuỗi đã được loại bỏ khoảng trắng (trimmedUsername)
     const existing = await User.findOne({ username: trimmedUsername });
