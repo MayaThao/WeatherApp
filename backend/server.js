@@ -44,6 +44,11 @@ app.use((err, req, res, next) => {
   res.status(err.status || 500).json({ success: false, message: err.message });
 });
 
+// Bắt lỗi async không được catch — tránh crash server
+process.on("unhandledRejection", (err) => {
+  console.error("[unhandledRejection]", err.message);
+});
+
 app.listen(PORT, () => {
   console.log(`✅ Server chạy tại http://localhost:${PORT}`);
 });

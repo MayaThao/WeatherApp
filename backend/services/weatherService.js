@@ -1,7 +1,7 @@
 const fetch = require("node-fetch");
 
 const BASE_URL = "https://api.openweathermap.org/data/2.5";
-const APP_ID = process.env.OWM_API_KEY || "02e4265cab9ffc977581f170f42a680a";
+const APP_ID = process.env.OWM_API_KEY || "39615636de8ce1a6fac70bbfb08c8039";
 const COMMON = `&appid=${APP_ID}&units=metric&lang=vi`;
 
 /**
