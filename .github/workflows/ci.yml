@@ -44,7 +44,7 @@ jobs:
             -H "Authorization: Basic $(echo -n '${{ secrets.JIRA_USER_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}' | base64)" \
             -d '{
               "fields": {
-                "project": { "key": "KAN" },
+                "project": { "key": "SCRUM" },
                 "summary": "❌ Postman test thất bại - '${{ github.sha }}'",
                 "description": {
                   "type": "doc",
